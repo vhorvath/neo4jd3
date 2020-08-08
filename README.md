@@ -21,11 +21,10 @@
 
 ## Running
 
-First of all, make sure you have ruby and sass gem installed. Then, clone the repository, install all dependencies, build and serve the project.
+Clone the repository, install all dependencies, build and serve the project.
 
-```bash
-> gem install sass
-> git clone https://github.com/eisman/neo4jd3.git
+```
+> git clone https://github.com/vhorvath/neo4jd3.git
 > npm install
 > gulp
 ```
