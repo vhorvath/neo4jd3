@@ -5,8 +5,8 @@
 function Neo4jD3(_selector, _options) {
     let container, info, node, nodes, relationship, relationshipOutline, 
         relationshipOverlay, relationshipText, relationships, selector, 
-        simulation, svg, svgNodes, svgRelationships, svgScale, svgTranslate,
-        justLoaded = false, numClasses = 0;
+        simulation, svg, svgNodes, svgRelationships, svgScale,
+        svgTranslate_x = 0, svgTranslate_y = 0, justLoaded = false, numClasses = 0;
 
     const classes2colors = {},
           options = {
@@ -42,19 +42,11 @@ function Neo4jD3(_selector, _options) {
                        .attr('height', '100%')
                        .attr('class', 'neo4jd3-graph')
                        .call(d3.zoom().on('zoom', () => {
-                           let scale = d3.event.transform.k,
-                               translate = [d3.event.transform.x, d3.event.transform.y];
+                            const scale = d3.event.transform.k * (svgScale || 1),
+                                  translate_x = d3.event.transform.x + svgTranslate_x,
+                                  translate_y = d3.event.transform.y + svgTranslate_y;
 
-                           if (svgTranslate) {
-                               translate[0] += svgTranslate[0];
-                               translate[1] += svgTranslate[1];
-                           }
-
-                           if (svgScale) {
-                               scale *= svgScale;
-                           }
-
-                           svg.attr('transform', `translate(${translate[0]}, ${translate[1]}) scale(${scale})`);
+                            svg.attr('transform', `translate(${translate_x}, ${translate_y}) scale(${scale})`);
                        }))
                        .on('dblclick.zoom', null)
                        .append('g')
@@ -833,9 +825,10 @@ function Neo4jD3(_selector, _options) {
         }
 
         svgScale = 0.85 / Math.max(width / fullWidth, height / fullHeight);
-        svgTranslate = [fullWidth / 2 - svgScale * midX, fullHeight / 2 - svgScale * midY];
+        svgTranslate_x = fullWidth / 2 - svgScale * midX;
+        svgTranslate_y = fullHeight / 2 - svgScale * midY;
 
-        svg.attr('transform', `translate(${svgTranslate[0]}, ${svgTranslate[1]}) scale(${svgScale})`);
+        svg.attr('transform', `translate(${svgTranslate_y}, ${svgTranslate_x}) scale(${svgScale})`);
     }
 
     init(_selector, _options);
