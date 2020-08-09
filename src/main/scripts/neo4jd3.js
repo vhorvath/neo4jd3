@@ -12,19 +12,26 @@ function Neo4jD3(_selector, _options) {
           options = {
             arrowSize: 4,
             colors: colors(),
-            highlight: undefined,
+            highlight: null,
             iconMap: fontAwesomeIcons(),
-            icons: undefined,
+            icons: null,
             imageMap: {},
-            images: undefined,
+            images: null,
             infoPanel: true,
-            minCollision: undefined,
-            neo4jData: undefined,
-            neo4jDataUrl: undefined,
-            nodeOutlineFillColor: undefined,
+            minCollision: null,
+            neo4jData: null,
+            neo4jDataUrl: null,
+            nodeOutlineFillColor: null,
             nodeRadius: 25,
             relationshipColor: '#a5abb6',
-            zoomFit: false
+            zoomFit: false,
+            onNodeClick: () => {},
+            onNodeDoubleClick: () => {},
+            onNodeDragStart: () => {},
+            onNodeDragEnd: () => {},
+            onNodeMouseEnter: () => {},
+            onNodeMouseLeave: () => {},
+            onRelationshipDoubleClick: () => {},
         };
 
     const VERSION = '0.0.2';
@@ -130,36 +137,24 @@ function Neo4jD3(_selector, _options) {
                        return classes;
                    })
                    .on('click', d => {
-                       d.fx = d.fy = null;
-
-                       if (typeof options.onNodeClick === 'function') {
-                           options.onNodeClick(d);
-                       }
+                        d.fx = d.fy = null;
+                        options.onNodeClick(d);
                    })
                    .on('dblclick', d => {
-                       stickNode(d);
-
-                       if (typeof options.onNodeDoubleClick === 'function') {
-                           options.onNodeDoubleClick(d);
-                       }
+                        stickNode(d);
+                        options.onNodeDoubleClick(d);
                    })
                    .on('mouseenter', d => {
-                       if (info) {
-                           updateInfo(d);
-                       }
-
-                       if (typeof options.onNodeMouseEnter === 'function') {
-                           options.onNodeMouseEnter(d);
-                       }
+                        if (info) {
+                            updateInfo(d);
+                        }
+                        options.onNodeMouseEnter(d);
                    })
                    .on('mouseleave', d => {
-                       if (info) {
-                           clearInfo(d);
-                       }
-
-                       if (typeof options.onNodeMouseLeave === 'function') {
-                           options.onNodeMouseLeave(d);
-                       }
+                        if (info) {
+                            clearInfo(d);
+                        }
+                        options.onNodeMouseLeave(d);
                    })
                    .call(d3.drag()
                            .on('start', dragStarted)
@@ -223,11 +218,7 @@ function Neo4jD3(_selector, _options) {
         return relationship.enter()
                            .append('g')
                            .attr('class', 'relationship')
-                           .on('dblclick', d => {
-                               if (typeof options.onRelationshipDoubleClick === 'function') {
-                                   options.onRelationshipDoubleClick(d);
-                               }
-                           })
+                           .on('dblclick', options.onRelationshipDoubleClick)
                            .on('mouseenter', d => {
                                if (info) {
                                    updateInfo(d);
@@ -341,9 +332,7 @@ function Neo4jD3(_selector, _options) {
             simulation.alphaTarget(0);
         }
 
-        if (typeof options.onNodeDragEnd === 'function') {
-            options.onNodeDragEnd(d);
-        }
+        options.onNodeDragEnd(d);
     }
 
     function dragged(d) {
@@ -357,10 +346,7 @@ function Neo4jD3(_selector, _options) {
 
         d.fx = d.x;
         d.fy = d.y;
-
-        if (typeof options.onNodeDragStart === 'function') {
-            options.onNodeDragStart(d);
-        }
+        options.onNodeDragStart(d);
     }
 
     function extend(obj1, obj2) {
@@ -433,11 +419,15 @@ function Neo4jD3(_selector, _options) {
     function init(_selector, _options) {
         initIconMap();
 
-        merge(options, _options);
+        Object.keys(options).forEach(key => {
+            if (options[key] instanceof Function) {
+                if (!(_options[key] instanceof Function)) {return;}
+            }
 
-        if (options.icons) {
-            options.showIcons = true;
-        }
+            options[key] = _options[key] || options[key];
+        });
+
+        options.showIcons = !!options.icons;
 
         if (!options.minCollision) {
             options.minCollision = options.nodeRadius * 2;
@@ -719,11 +709,10 @@ function Neo4jD3(_selector, _options) {
     }
 
     function tickRelationshipsOutlines() {
-        relationship.each(() => {
+        relationship.each(function () {     // This must remain regular function due to the way `this` is used wihin
             let rel = d3.select(this),
                 outline = rel.select('.outline'),
                 text = rel.select('.text'),
-                bbox = text.node().getBBox(),
                 padding = 3;
 
             outline.attr('d', d => {
