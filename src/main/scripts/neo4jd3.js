@@ -62,11 +62,11 @@ function Neo4jD3(_selector, _options) {
 
     function appendImageToNode(node) {
         return node.append('image')
-                   .attr('height', d => icon(d) ? '24px': '30px')
-                   .attr('x', d => icon(d) ? '5px': '-15px')
-                   .attr('xlink:href', d => image(d))
-                   .attr('y', d => icon(d) ? '5px': '-16px')
-                   .attr('width', d => icon(d) ? '24px': '30px');
+                   .attr('height', d => d.icon ? '24px': '30px')
+                   .attr('x', d => d.icon ? '5px': '-15px')
+                   .attr('xlink:href', d => d.image)
+                   .attr('y', d => d.icon ? '5px': '-16px')
+                   .attr('width', d => d.icon ? '24px': '30px');
     }
 
     function appendInfoPanel(container) {
@@ -109,11 +109,11 @@ function Neo4jD3(_selector, _options) {
                               primary_label = d.labels[0],
                               classes = ['node'];
 
-                        if (icon(d)) {
+                        if (d.icon) {
                             classes.push('node-icon');
                         }
 
-                        if (image(d)) {
+                        if (d.image) {
                             classes.push('node-image');
                         }
 
@@ -155,13 +155,9 @@ function Neo4jD3(_selector, _options) {
         appendRingToNode(n);
         appendOutlineToNode(n);
 
-        if (options.icons) {
-            appendTextToNode(n);
-        }
+        if (options.icons) {appendIconToNode(n);}
 
-        if (options.images) {
-            appendImageToNode(n);
-        }
+        if (options.images) {appendImageToNode(n);}
 
         return n;
     }
@@ -182,16 +178,16 @@ function Neo4jD3(_selector, _options) {
                    .append('title').text(d => toString(d));
     }
 
-    function appendTextToNode(node) {
+    function appendIconToNode(node) {
         return node.append('text')
-                   .attr('class', d => 'text' + (icon(d) ? ' icon' : ''))
+                   .attr('class', d => d.icon ? 'text icon' : 'text')
                    .attr('fill', '#ffffff')
-                   .attr('font-size', d => icon(d) ? (options.nodeRadius + 'px') : '10px')
+                   .attr('font-size', d => d.icon ? `${options.nodeRadius}px` : '10px')
                    .attr('pointer-events', 'none')
                    .attr('text-anchor', 'middle')
-                   .attr('y', d => icon(d) ? (parseInt(Math.round(options.nodeRadius * 0.32)) + 'px') : '4px')
+                   .attr('y', d => d.icon ? `${Math.round(options.nodeRadius * 0.32)}px` : '4px')
                    .html(d => {
-                       const _icon = icon(d);
+                       const _icon = d.icon;
                        return _icon ? '&#x' + _icon : d.id;
                    });
     }
@@ -770,7 +766,12 @@ function Neo4jD3(_selector, _options) {
     }
 
     function updateNodes(n) {
-        Array.prototype.push.apply(nodes, n);
+        n.forEach(node => {
+            node.icon = icon(node);            
+            node.image = image(node);
+        });
+
+        nodes = Array.prototype.concat(nodes, n);
 
         node = svgNodes.selectAll('.node')
                        .data(nodes, d => d.id);
