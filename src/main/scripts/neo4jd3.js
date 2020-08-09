@@ -283,10 +283,6 @@ function Neo4jD3(_selector, _options) {
         info.html('');
     }
 
-    function color() {
-        return options.colors[options.colors.length * Math.random() << 0];
-    }
-
     function colors() {
         // d3.schemeCategory10,
         // d3.schemeCategory20,
@@ -347,15 +343,6 @@ function Neo4jD3(_selector, _options) {
         d.fx = d.x;
         d.fy = d.y;
         options.onNodeDragStart(d);
-    }
-
-    function extend(obj1, obj2) {
-        const obj = {};
-
-        merge(obj, obj1);
-        merge(obj, obj2);
-
-        return obj;
     }
 
     function fontAwesomeIcons() {
@@ -524,12 +511,6 @@ function Neo4jD3(_selector, _options) {
         });
     }
 
-    function merge(target, source) {
-        Object.keys(source).forEach(property => {
-            target[property] = source[property];
-        });
-    }
-
     function neo4jDataToD3Data(data) {
         const graph = {
             nodes: [],
@@ -656,29 +637,7 @@ function Neo4jD3(_selector, _options) {
             relationships: relationships.length
         };
     }
-/*
-    function smoothTransform(elem, translate, scale) {
-        var animationMilliseconds = 5000,
-            timeoutMilliseconds = 50,
-            steps = parseInt(animationMilliseconds / timeoutMilliseconds);
 
-        setTimeout(function() {
-            smoothTransformStep(elem, translate, scale, timeoutMilliseconds, 1, steps);
-        }, timeoutMilliseconds);
-    }
-
-    function smoothTransformStep(elem, translate, scale, timeoutMilliseconds, step, steps) {
-        var progress = step / steps;
-
-        elem.attr('transform', 'translate(' + (translate[0] * progress) + ', ' + (translate[1] * progress) + ') scale(' + (scale * progress) + ')');
-
-        if (step < steps) {
-            setTimeout(function() {
-                smoothTransformStep(elem, translate, scale, timeoutMilliseconds, step + 1, steps);
-            }, timeoutMilliseconds);
-        }
-    }
-*/
     function stickNode(d) {
         d.fx = d3.event.x;
         d.fy = d3.event.y;
@@ -898,7 +857,6 @@ function Neo4jD3(_selector, _options) {
         svgTranslate = [fullWidth / 2 - svgScale * midX, fullHeight / 2 - svgScale * midY];
 
         svg.attr('transform', 'translate(' + svgTranslate[0] + ', ' + svgTranslate[1] + ') scale(' + svgScale + ')');
-//        smoothTransform(svgTranslate, svgScale);
     }
 
     init(_selector, _options);
