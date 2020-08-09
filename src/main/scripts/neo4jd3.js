@@ -34,7 +34,7 @@ function Neo4jD3(_selector, _options) {
                        .attr('width', '100%')
                        .attr('height', '100%')
                        .attr('class', 'neo4jd3-graph')
-                       .call(d3.zoom().on('zoom', function() {
+                       .call(d3.zoom().on('zoom', () => {
                            let scale = d3.event.transform.k,
                                translate = [d3.event.transform.x, d3.event.transform.y];
 
@@ -63,21 +63,11 @@ function Neo4jD3(_selector, _options) {
 
     function appendImageToNode(node) {
         return node.append('image')
-                   .attr('height', function(d) {
-                       return icon(d) ? '24px': '30px';
-                   })
-                   .attr('x', function(d) {
-                       return icon(d) ? '5px': '-15px';
-                   })
-                   .attr('xlink:href', function(d) {
-                       return image(d);
-                   })
-                   .attr('y', function(d) {
-                       return icon(d) ? '5px': '-16px';
-                   })
-                   .attr('width', function(d) {
-                       return icon(d) ? '24px': '30px';
-                   });
+                   .attr('height', d => icon(d) ? '24px': '30px')
+                   .attr('x', d => icon(d) ? '5px': '-15px')
+                   .attr('xlink:href', d => image(d))
+                   .attr('y', d => icon(d) ? '5px': '-16px')
+                   .attr('width', d => icon(d) ? '24px': '30px');
     }
 
     function appendInfoPanel(container) {
@@ -93,15 +83,9 @@ function Neo4jD3(_selector, _options) {
             .html('<strong>' + property + '</strong>' + (value ? (': ' + value) : ''));
 
         if (!value) {
-            elem.style('background-color', function(d) {
-                    return options.nodeOutlineFillColor ? options.nodeOutlineFillColor : (isNode ? class2color(property) : defaultColor());
-                })
-                .style('border-color', function(d) {
-                    return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : (isNode ? class2darkenColor(property) : defaultDarkenColor());
-                })
-                .style('color', function(d) {
-                    return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : '#fff';
-                });
+            elem.style('background-color', d => options.nodeOutlineFillColor ? options.nodeOutlineFillColor : (isNode ? class2color(property) : defaultColor()))
+                .style('border-color', d => options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : (isNode ? class2darkenColor(property) : defaultDarkenColor()))
+                .style('color', d => options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : '#fff');
         }
     }
 
@@ -120,7 +104,7 @@ function Neo4jD3(_selector, _options) {
     function appendNode() {
         return node.enter()
                    .append('g')
-                   .attr('class', function(d) {
+                   .attr('class', d => {
                        let highlight, i,
                            classes = 'node';
 
@@ -145,21 +129,21 @@ function Neo4jD3(_selector, _options) {
 
                        return classes;
                    })
-                   .on('click', function(d) {
+                   .on('click', d => {
                        d.fx = d.fy = null;
 
                        if (typeof options.onNodeClick === 'function') {
                            options.onNodeClick(d);
                        }
                    })
-                   .on('dblclick', function(d) {
+                   .on('dblclick', d => {
                        stickNode(d);
 
                        if (typeof options.onNodeDoubleClick === 'function') {
                            options.onNodeDoubleClick(d);
                        }
                    })
-                   .on('mouseenter', function(d) {
+                   .on('mouseenter', d => {
                        if (info) {
                            updateInfo(d);
                        }
@@ -168,7 +152,7 @@ function Neo4jD3(_selector, _options) {
                            options.onNodeMouseEnter(d);
                        }
                    })
-                   .on('mouseleave', function(d) {
+                   .on('mouseleave', d => {
                        if (info) {
                            clearInfo(d);
                        }
@@ -204,41 +188,27 @@ function Neo4jD3(_selector, _options) {
         return node.append('circle')
                    .attr('class', 'outline')
                    .attr('r', options.nodeRadius)
-                   .style('fill', function(d) {
-                       return options.nodeOutlineFillColor ? options.nodeOutlineFillColor : class2color(d.labels[0]);
-                   })
-                   .style('stroke', function(d) {
-                       return options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : class2darkenColor(d.labels[0]);
-                   })
-                   .append('title').text(function(d) {
-                       return toString(d);
-                   });
+                   .style('fill', d => options.nodeOutlineFillColor ? options.nodeOutlineFillColor : class2color(d.labels[0]))
+                   .style('stroke', d => options.nodeOutlineFillColor ? class2darkenColor(options.nodeOutlineFillColor) : class2darkenColor(d.labels[0]))
+                   .append('title').text(d => toString(d));
     }
 
     function appendRingToNode(node) {
         return node.append('circle')
                    .attr('class', 'ring')
                    .attr('r', options.nodeRadius * 1.16)
-                   .append('title').text(function(d) {
-                       return toString(d);
-                   });
+                   .append('title').text(d => toString(d));
     }
 
     function appendTextToNode(node) {
         return node.append('text')
-                   .attr('class', function(d) {
-                       return 'text' + (icon(d) ? ' icon' : '');
-                   })
+                   .attr('class', d => 'text' + (icon(d) ? ' icon' : ''))
                    .attr('fill', '#ffffff')
-                   .attr('font-size', function(d) {
-                       return icon(d) ? (options.nodeRadius + 'px') : '10px';
-                   })
+                   .attr('font-size', d => icon(d) ? (options.nodeRadius + 'px') : '10px')
                    .attr('pointer-events', 'none')
                    .attr('text-anchor', 'middle')
-                   .attr('y', function(d) {
-                       return icon(d) ? (parseInt(Math.round(options.nodeRadius * 0.32)) + 'px') : '4px';
-                   })
-                   .html(function(d) {
+                   .attr('y', d => icon(d) ? (parseInt(Math.round(options.nodeRadius * 0.32)) + 'px') : '4px')
+                   .html(d => {
                        const _icon = icon(d);
                        return _icon ? '&#x' + _icon : d.id;
                    });
@@ -253,12 +223,12 @@ function Neo4jD3(_selector, _options) {
         return relationship.enter()
                            .append('g')
                            .attr('class', 'relationship')
-                           .on('dblclick', function(d) {
+                           .on('dblclick', d => {
                                if (typeof options.onRelationshipDoubleClick === 'function') {
                                    options.onRelationshipDoubleClick(d);
                                }
                            })
-                           .on('mouseenter', function(d) {
+                           .on('mouseenter', d => {
                                if (info) {
                                    updateInfo(d);
                                }
@@ -284,9 +254,7 @@ function Neo4jD3(_selector, _options) {
                 .attr('font-size', '8px')
                 .attr('pointer-events', 'none')
                 .attr('text-anchor', 'middle')
-                .text(function(d) {
-                    return d.type;
-                });
+                .text(d => d.type);
     }
 
     function appendRelationshipToGraph() {
@@ -357,11 +325,7 @@ function Neo4jD3(_selector, _options) {
     }
 
     function contains(array, id) {
-        const filter = array.filter(function(elem) {
-            return elem.id === id;
-        });
-
-        return filter.length > 0;
+        return array.filter(elem => elem.id === id).length > 0;
     }
 
     function defaultColor() {
@@ -506,11 +470,11 @@ function Neo4jD3(_selector, _options) {
     }
 
     function initIconMap() {
-        Object.keys(options.iconMap).forEach(function(key, index) {
+        Object.keys(options.iconMap).forEach(key => {
             let keys = key.split(','),
                 value = options.iconMap[key];
 
-            keys.forEach(function(key) {
+            keys.forEach(key => {
                 options.iconMap[key] = value;
             });
         });
@@ -537,18 +501,12 @@ function Neo4jD3(_selector, _options) {
 //                           .velocityDecay(0.8)
 //                           .force('x', d3.force().strength(0.002))
 //                           .force('y', d3.force().strength(0.002))
-                           .force('collide', d3.forceCollide().radius(function(d) {
-                               return options.minCollision;
-                           }).iterations(2))
+                           .force('collide', d3.forceCollide().radius(d => options.minCollision).iterations(2))
                            .force('charge', d3.forceManyBody())
-                           .force('link', d3.forceLink().id(function(d) {
-                               return d.id;
-                           }))
+                           .force('link', d3.forceLink().id(d => d.id))
                            .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
-                           .on('tick', function() {
-                               tick();
-                           })
-                           .on('end', function() {
+                           .on('tick', () => tick())
+                           .on('end', () => {
                                if (options.zoomFit && !justLoaded) {
                                    justLoaded = true;
                                    zoomFit(2);
@@ -567,7 +525,7 @@ function Neo4jD3(_selector, _options) {
         nodes = [];
         relationships = [];
 
-        d3.json(neo4jDataUrl, function(error, data) {
+        d3.json(neo4jDataUrl, (error, data) => {
             if (error) {
                 throw error;
             }
@@ -577,7 +535,7 @@ function Neo4jD3(_selector, _options) {
     }
 
     function merge(target, source) {
-        Object.keys(source).forEach(function(property) {
+        Object.keys(source).forEach(property => {
             target[property] = source[property];
         });
     }
@@ -588,21 +546,21 @@ function Neo4jD3(_selector, _options) {
             relationships: []
         };
 
-        data.results.forEach(function(result) {
-            result.data.forEach(function(data) {
-                data.graph.nodes.forEach(function(node) {
+        data.results.forEach(result => {
+            result.data.forEach(data => {
+                data.graph.nodes.forEach(node => {
                     if (!contains(graph.nodes, node.id)) {
                         graph.nodes.push(node);
                     }
                 });
 
-                data.graph.relationships.forEach(function(relationship) {
+                data.graph.relationships.forEach(relationship => {
                     relationship.source = relationship.startNode;
                     relationship.target = relationship.endNode;
                     graph.relationships.push(relationship);
                 });
 
-                data.graph.relationships.sort(function(a, b) {
+                data.graph.relationships.sort((a, b) => {
                     if (a.source > b.source) {
                         return 1;
                     } else if (a.source < b.source) {
@@ -743,15 +701,13 @@ function Neo4jD3(_selector, _options) {
 
     function tickNodes() {
         if (node) {
-            node.attr('transform', function(d) {
-                return 'translate(' + d.x + ', ' + d.y + ')';
-            });
+            node.attr('transform', d => 'translate(' + d.x + ', ' + d.y + ')');
         }
     }
 
     function tickRelationships() {
         if (relationship) {
-            relationship.attr('transform', function(d) {
+            relationship.attr('transform', d => {
                 const angle = rotation(d.source, d.target);
                 return 'translate(' + d.source.x + ', ' + d.source.y + ') rotate(' + angle + ')';
             });
@@ -763,14 +719,14 @@ function Neo4jD3(_selector, _options) {
     }
 
     function tickRelationshipsOutlines() {
-        relationship.each(function(relationship) {
+        relationship.each(() => {
             let rel = d3.select(this),
                 outline = rel.select('.outline'),
                 text = rel.select('.text'),
                 bbox = text.node().getBBox(),
                 padding = 3;
 
-            outline.attr('d', function(d) {
+            outline.attr('d', d => {
                 let center = { x: 0, y: 0 },
                     angle = rotation(d.source, d.target),
                     textBoundingBox = text.node().getBBox(),
@@ -807,7 +763,7 @@ function Neo4jD3(_selector, _options) {
     }
 
     function tickRelationshipsOverlays() {
-        relationshipOverlay.attr('d', function(d) {
+        relationshipOverlay.attr('d', d => {
             let center = { x: 0, y: 0 },
                 angle = rotation(d.source, d.target),
                 n1 = unitaryNormalVector(d.source, d.target),
@@ -826,7 +782,7 @@ function Neo4jD3(_selector, _options) {
     }
 
     function tickRelationshipsTexts() {
-        relationshipText.attr('transform', function(d) {
+        relationshipText.attr('transform', d => {
             let angle = (rotation(d.source, d.target) + 360) % 360,
                 mirror = angle > 90 && angle < 270,
                 center = { x: 0, y: 0 },
@@ -844,7 +800,7 @@ function Neo4jD3(_selector, _options) {
 
         s += ' (<id>: ' + d.id;
 
-        Object.keys(d.properties).forEach(function(property) {
+        Object.keys(d.properties).forEach(property => {
             s += ', ' + property + ': ' + JSON.stringify(d.properties[property]);
         });
 
@@ -889,7 +845,7 @@ function Neo4jD3(_selector, _options) {
 
         appendInfoElementProperty('property', '&lt;id&gt;', d.id);
 
-        Object.keys(d.properties).forEach(function(property) {
+        Object.keys(d.properties).forEach(property => {
             appendInfoElementProperty('property', property, JSON.stringify(d.properties[property]));
         });
     }
@@ -898,7 +854,7 @@ function Neo4jD3(_selector, _options) {
         Array.prototype.push.apply(nodes, n);
 
         node = svgNodes.selectAll('.node')
-                       .data(nodes, function(d) { return d.id; });
+                       .data(nodes, d => d.id);
         const nodeEnter = appendNodeToGraph();
         node = nodeEnter.merge(node);
     }
@@ -915,7 +871,7 @@ function Neo4jD3(_selector, _options) {
         Array.prototype.push.apply(relationships, r);
 
         relationship = svgRelationships.selectAll('.relationship')
-                                       .data(relationships, function(d) { return d.id; });
+                                       .data(relationships, d => d.id);
 
         const relationshipEnter = appendRelationshipToGraph();
 
@@ -935,7 +891,7 @@ function Neo4jD3(_selector, _options) {
         return VERSION;
     }
 
-    function zoomFit(transitionDuration) {
+    function zoomFit() {
         let bounds = svg.node().getBBox(),
             parent = svg.node().parentElement.parentElement,
             fullWidth = parent.clientWidth,
