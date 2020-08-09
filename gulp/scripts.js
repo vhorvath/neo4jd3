@@ -17,7 +17,7 @@ var _ = require('lodash'),
     plumber = require('gulp-plumber'),
     rename = require('gulp-rename'),
     source = require('vinyl-source-stream'),
-    uglify = require('gulp-uglify'),
+    uglify = require('gulp-uglify-es').default,
     watchify = require('watchify');
 
 gulp.task('scripts', ['scripts:external', 'scripts:internal'], function() {

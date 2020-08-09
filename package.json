@@ -56,7 +56,7 @@
     "gulp-notify": "^2.2.0",
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^2.0.0",
+    "gulp-uglify-es": "^3.3.9",
     "gulp-uncache": "^0.4.0-beta1",
     "gulp-util": "^3.0.7",
     "gulp-sass": "^4.1.0",
