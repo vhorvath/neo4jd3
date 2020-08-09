@@ -513,37 +513,31 @@ function Neo4jD3(_selector, _options) {
                     }
                 });
 
-                data.graph.relationships.forEach(relationship => {
-                    relationship.source = relationship.startNode;
-                    relationship.target = relationship.endNode;
-                    graph.relationships.push(relationship);
+                data.graph.relationships.forEach(r => {
+                    r.source = r.startNode;
+                    r.target = r.endNode;
+                    r.linknum = 1;
+                    graph.relationships.push(r);
                 });
 
                 data.graph.relationships.sort((a, b) => {
-                    if (a.source > b.source) {
-                        return 1;
-                    } else if (a.source < b.source) {
-                        return -1;
-                    } else {
-                        if (a.target > b.target) {
-                            return 1;
-                        }
-
-                        if (a.target < b.target) {
-                            return -1;
-                        } else {
-                            return 0;
-                        }
-                    }
+                    if (a.source > b.source) {return 1;}
+                    if (a.source < b.source) {return -1;}
+                    
+                    if (a.target > b.target) {return 1;}
+                    if (a.target < b.target) {return -1;}
+                    
+                    return 0;
                 });
 
-                for (let i = 0; i < data.graph.relationships.length; i++) {
-                    if (i !== 0 && data.graph.relationships[i].source === data.graph.relationships[i-1].source && data.graph.relationships[i].target === data.graph.relationships[i-1].target) {
-                        data.graph.relationships[i].linknum = data.graph.relationships[i - 1].linknum + 1;
-                    } else {
-                        data.graph.relationships[i].linknum = 1;
+                // Link multiplicity check
+                data.graph.relationships.filter((_, i) => i !== 0)
+                                        .forEach((r, i) => {
+                    const r_prev = data.graph.relationships[i];
+                    if (r.source === r_prev.source && r.target === r_prev.target) {
+                        r.linknum = r_prev.linknum + 1;
                     }
-                }
+                });
             });
         });
 
