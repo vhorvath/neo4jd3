@@ -343,57 +343,54 @@ function Neo4jD3(_selector, _options) {
     }
 
     function icon(d) {
-        let code;
+        const {iconMap, showIcons, icons} = options;
 
-        if (options.iconMap && options.showIcons && options.icons) {
-            if (options.icons[d.labels[0]] && options.iconMap[options.icons[d.labels[0]]]) {
-                code = options.iconMap[options.icons[d.labels[0]]];
-            } else if (options.iconMap[d.labels[0]]) {
-                code = options.iconMap[d.labels[0]];
-            } else if (options.icons[d.labels[0]]) {
-                code = options.icons[d.labels[0]];
-            }
-        }
+        if (!(iconMap && showIcons && icons)) {return;}
 
-        return code;
+        const primary_label = d.labels[0],
+              FA_label = icons[primary_label],
+              mapped_icon = iconMap[FA_label];
+
+        // Highest priority: primary icon that is remapped onto an image
+        if ((FA_label && mapped_icon)) {return mapped_icon;}
+
+        // Medium priority (fallback 1): label that is mapped onto an image
+        const image_by_label = iconMap[primary_label];        
+        if (image_by_label) {return image_by_label;}
+
+        // Lowest priority (final fallback): label that maps onto an icon
+        return FA_label;
     }
 
     function image(d) {
-        let i, imagesForLabel, img, imgLevel, label, labelPropertyValue, property, value;
+        if (!options.images) {return;}
 
-        if (options.images) {
-            imagesForLabel = options.imageMap[d.labels[0]];
+        const primary_label = d.labels[0];
+        const imagesForLabel = options.imageMap[primary_label];
 
-            if (imagesForLabel) {
-                imgLevel = 0;
+        if (!imagesForLabel) {return;}
 
-                for (i = 0; i < imagesForLabel.length; i++) {
-                    labelPropertyValue = imagesForLabel[i].split('|');
+        let property, value, image, image_src;
 
-                    switch (labelPropertyValue.length) {
-                        case 3:
-                        value = labelPropertyValue[2];
-                        /* falls through */
-                        case 2:
-                        property = labelPropertyValue[1];
-                        /* falls through */
-                        case 1:
-                        label = labelPropertyValue[0];
-                    }
+        imagesForLabel.forEach(propertyValueImage => {
+            if (image_src) {return;}
 
-                    if (d.labels[0] === label &&
-                        (!property || d.properties[property] !== undefined) &&
-                        (!value || d.properties[property] === value)) {
-                        if (labelPropertyValue.length > imgLevel) {
-                            img = options.images[imagesForLabel[i]];
-                            imgLevel = labelPropertyValue.length;
-                        }
-                    }
-                }
+            [property, value, image] = propertyValueImage;
+
+            // Only the label matches this will match last in ordered list
+            if ((!property) && (!value)) {
+                image_src = image;
+                return;
             }
-        }
 
-        return img;
+            // Both property and value must match for below (most specific case)
+            if (!d.properties[property]) {return;}
+            if ((!value) || (d.properties[property] !== value)) {return;}
+
+            image_src = image;
+        });
+
+        return image_src;
     }
 
     function init(_selector, _options) {
@@ -440,30 +437,28 @@ function Neo4jD3(_selector, _options) {
     }
 
     function initIconMap() {
-        Object.keys(options.iconMap).forEach(key => {
-            let keys = key.split(','),
-                value = options.iconMap[key];
-
-            keys.forEach(key => {
-                options.iconMap[key] = value;
-            });
+        const iconMap = options.iconMap;
+        let value;
+        Object.keys(iconMap).forEach(key => {
+            value = iconMap[key];
+            if (value === undefined) {return;}
+            key.split(',').forEach(key => {iconMap[key] = value;});
         });
     }
 
     function initImageMap() {
-        let key, keys;
+        let key, label, property, value, values;
+        const {imageMap, images} = options;
+        const imageKeysSplit = Object.keys(images).map(x => x.split('|'));
 
-        for (key in options.images) {
-            if (options.images.hasOwnProperty(key)) {
-                keys = key.split('|');
-
-                if (!options.imageMap[keys[0]]) {
-                    options.imageMap[keys[0]] = [key];
-                } else {
-                    options.imageMap[keys[0]].push(key);
-                }
-            }
-        }
+        // Sorting keys with declared depth length in reverse
+        imageKeysSplit.sort((a, b) => b.length - a.length);
+        imageKeysSplit.forEach(splitValues => {
+            [label, property, value] = splitValues;
+            values = imageMap[label] || [];
+            values.push([property, value, images[splitValues.join('|')]]);
+            imageMap[label] = values;
+        });
     }
 
     function initSimulation() {
