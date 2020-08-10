@@ -11,9 +11,9 @@ function Neo4jD3(_selector, _options) {
     const classes2colors = {},
           options = {
             arrowSize: 4,
-            colors: colors(),
+            colors: {},
             highlight: null,
-            iconMap: fontAwesomeIcons(),
+            iconMap: {},
             icons: null,
             imageMap: {},
             images: null,
@@ -37,15 +37,15 @@ function Neo4jD3(_selector, _options) {
     const VERSION = '0.0.2';
 
     function appendGraph(container) {
+        let scale, translate_x, translate_y;
         svg = container.append('svg')
                        .attr('width', '100%')
                        .attr('height', '100%')
                        .attr('class', 'neo4jd3-graph')
                        .call(d3.zoom().on('zoom', () => {
-                            const scale = d3.event.transform.k * (svgScale || 1),
-                                  translate_x = d3.event.transform.x + svgTranslate_x,
-                                  translate_y = d3.event.transform.y + svgTranslate_y;
-
+                            scale = d3.event.transform.k * (svgScale || 1);
+                            translate_x = d3.event.transform.x + svgTranslate_x;
+                            translate_y = d3.event.transform.y + svgTranslate_y;
                             svg.attr('transform', `translate(${translate_x}, ${translate_y}) scale(${scale})`);
                        }))
                        .on('dblclick.zoom', null)
@@ -109,13 +109,8 @@ function Neo4jD3(_selector, _options) {
                               primary_label = d.labels[0],
                               classes = ['node'];
 
-                        if (d.icon) {
-                            classes.push('node-icon');
-                        }
-
-                        if (d.image) {
-                            classes.push('node-image');
-                        }
+                        if (d.icon) {classes.push('node-icon');}
+                        if (d.image) {classes.push('node-image');}
 
                         if (highlights.some(highlight => (primary_label === highlight.class) && (d.properties[highlight.property] === highlight.value))) {
                             classes.push('node-highlighted');
@@ -156,7 +151,6 @@ function Neo4jD3(_selector, _options) {
         appendOutlineToNode(n);
 
         if (options.icons) {appendIconToNode(n);}
-
         if (options.images) {appendImageToNode(n);}
 
         return n;
@@ -232,16 +226,13 @@ function Neo4jD3(_selector, _options) {
     }
 
     function appendRelationshipToGraph() {
-        const relationship = appendRelationship(),
-              text = appendTextToRelationship(relationship),
-              outline = appendOutlineToRelationship(relationship),
-              overlay = appendOverlayToRelationship(relationship);
+        const relationship = appendRelationship();
 
         return {
-            outline: outline,
-            overlay: overlay,
             relationship: relationship,
-            text: text
+            text: appendTextToRelationship(relationship),
+            outline: appendOutlineToRelationship(relationship),
+            overlay: appendOverlayToRelationship(relationship)
         };
     }
 
@@ -398,6 +389,9 @@ function Neo4jD3(_selector, _options) {
             options.minCollision = options.nodeRadius * 2;
         }
 
+        options.colors = _options.colors || colors();
+        options.iconMap = _options.iconMap || fontAwesomeIcons();
+
         initImageMap();
 
         selector = _selector;
@@ -435,7 +429,7 @@ function Neo4jD3(_selector, _options) {
     }
 
     function initImageMap() {
-        let key, label, property, value, values;
+        let label, property, value, values;
         const {imageMap, images} = options;
         const imageKeysSplit = Object.keys(images).map(x => x.split('|'));
 
@@ -450,21 +444,21 @@ function Neo4jD3(_selector, _options) {
     }
 
     function initSimulation() {
-        return simulation = d3.forceSimulation()
-//                           .velocityDecay(0.8)
-//                           .force('x', d3.force().strength(0.002))
-//                           .force('y', d3.force().strength(0.002))
-                           .force('collide', d3.forceCollide().radius(d => options.minCollision).iterations(2))
-                           .force('charge', d3.forceManyBody())
-                           .force('link', d3.forceLink().id(d => d.id))
-                           .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
-                           .on('tick', () => tick())
-                           .on('end', () => {
-                               if (options.zoomFit && !justLoaded) {
-                                   justLoaded = true;
-                                   zoomFit(2);
-                               }
-                           });
+        return d3.forceSimulation()
+                // .velocityDecay(0.8)
+                // .force('x', d3.force().strength(0.002))
+                // .force('y', d3.force().strength(0.002))
+                .force('collide', d3.forceCollide().radius(d => options.minCollision).iterations(2))
+                .force('charge', d3.forceManyBody())
+                .force('link', d3.forceLink().id(d => d.id))
+                .force('center', d3.forceCenter(svg.node().parentElement.parentElement.clientWidth / 2, svg.node().parentElement.parentElement.clientHeight / 2))
+                .on('tick', () => tick())
+                .on('end', () => {
+                    if (options.zoomFit && !justLoaded) {
+                        justLoaded = true;
+                        zoomFit(2);
+                    }
+                });
     }
 
     function loadNeo4jData() {
