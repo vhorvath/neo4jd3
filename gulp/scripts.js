@@ -111,3 +111,19 @@ function error(err) {
     gutil.log(gutil.colors.red('Error: ' + err));
     this.emit('end');
 }
+
+function fontAwesomeJSON() {
+    const faRaw = fs.readFileSync('node_modules/font-awesome/css/font-awesome.min.css', "utf-8");
+    const reAll = /(\.[\w\d-]+:before,?){1,}\{content:"\\[a-z\d]{4}"\}/g;
+    const reLabel = /(?<=\.fa-)([\w\d-]+)(?=:before)/g;
+    const reIndex = /(?<=\{content:\"\\)[a-f\d]{4}/g;
+
+    const faLabelsIndices = faRaw.match(reAll).reduce((arr, val) => {
+        const labels = val.match(reLabel);
+        const index = val.match(reIndex);
+        labels.forEach(label => {arr[label] = index[0];});
+        return arr;
+    }, {});
+
+    return JSON.stringify(faLabelsIndices);
+}
